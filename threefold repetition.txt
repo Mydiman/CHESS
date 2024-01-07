@@ -1,0 +1,18 @@
+W position B
+W          B
+W position B
+W          B
+W position
+
+  B position
+W B 
+W B position
+W B 
+W   position
+
+save postition after white moved (1, 3, 5... rounds) (only 3)
+save postition after white moved (2, 4, 6... rounds) (only 3)
+save postition after black moved (1, 3, 5... rounds) (only 3)
+save postition after black moved (2, 4, 6... rounds) (only 3)
+***castle counts***(any changes -> different position)
+***en passant counts***(any changes -> different position)

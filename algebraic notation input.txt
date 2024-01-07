@@ -1,0 +1,27 @@
+pawn moves      a5
+
+pawn captures   exd5 (e-file captures the piece on d5)
+
+En passant      exd6 e.p.
+
+promotion       e8=Q
+
+draw offer      =
+
+kingside castle 0-0 or O-O
+
+queenside ca... 0-0-0 or O-O-O
+
+piece move      Ra5
+                Na5
+                Ba5
+                Qa5
+                Ka5
+
+cature          add x between Ra5 (Rxa5)
+
+check           add + behind Ra5 (Ra5+)
+
+disambiguating moves Rdf8 
+                     R1f8
+                     Qh4e1

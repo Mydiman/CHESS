@@ -1,0 +1,4 @@
+king vs king
+king vs king and bishop
+king vs king and knight
+king vs king and two bishop (same colour)

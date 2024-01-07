@@ -1,0 +1,26 @@
+output
+
+  abcdefgh
+8 rnbqkbnr
+7 pppppppp
+6 00000000
+5 00000000
+4 00000000
+3 00000000
+2 PPPPPPPP
+1 RNBQKBNR
+
+real
+
+  01234567
+0
+1
+2
+3
+4
+5
+6
+7
+
+odd  = dark
+even = light
