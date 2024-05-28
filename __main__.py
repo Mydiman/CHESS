@@ -735,73 +735,26 @@ def main() -> None:
 
 
     def initial_setup() -> list:
-        #initial setup
         board = []
-        
-        enpassant = 64
 
+        enpassant = 64
         #W Q, W K, B Q, B K
         castling = [False, False, False, False]
         castling_already = [False, False, False, False]
-        
-        # big -> white, small -> black, 0 -> empty
-        testing_board = [
-            'R', 'N', 'B', 'Q', 'K', 'B', 'N', 'R',
-            'P', 'P', 'P', 'P', 'P', 'P', 'P', 'P',
-            0, 0, 0, 0, 0, 0, 0, 0,
-            0, 0, 0, 0, 0, 0, 0, 0,
-            0, 0, 0, 0, 0, 0, 0, 0,
-            0, 0, 0, 0, 0, 0, 0, 0,
-            'p', 'p', 'p', 'p', 'p', 'p', 'p', 'p',
-            'r', 'n', 'b', 'q', 'k', 'b', 'n', 'r'
-            ]  #for testing
-        if testing_board != []:
-            for i in range(8):
-                temp = []
-                for j in range(8):
-                    match testing_board [i * 8 + j]:
-                        case "K":
-                            temp.append(BoardCell("white", "king"))
-                        case "Q":
-                            temp.append(BoardCell("white", "queen"))
-                        case "R":
-                            temp.append(BoardCell("white", "rook"))
-                        case "N":
-                            temp.append(BoardCell("white", "knight"))
-                        case "B":
-                            temp.append(BoardCell("white", "bishop"))
-                        case "P":
-                            temp.append(BoardCell("white", "pawn"))
-                        case "k":
-                            temp.append(BoardCell("black", "king"))
-                        case "q":
-                            temp.append(BoardCell("black", "queen"))
-                        case "r":
-                            temp.append(BoardCell("black", "rook"))
-                        case "n":
-                            temp.append(BoardCell("black", "knight"))
-                        case "b":
-                            temp.append(BoardCell("black", "bishop"))
-                        case "p":
-                            temp.append(BoardCell("black", "pawn"))
-                        case 0:
-                            temp.append(BoardCell("empty", "empty"))
-                board.append(temp)
-        else:
-            for i in range(8):
-                temp = []
-                for j in range(8):
-                    if i == 0:
-                        temp.append(BoardCell("white", ["rook", "knight", "bishop", "queen", "king", "bishop", "knight", "rook"] [j]))
-                    elif i == 1:
-                        temp.append(BoardCell("white", "pawn"))
-                    elif i == 7:
-                        temp.append(BoardCell("black", ["rook", "knight", "bishop", "queen", "king", "bishop", "knight", "rook"] [j]))
-                    elif i == 6:
-                        temp.append(BoardCell("black", "pawn"))
-                    else:
-                        temp.append(BoardCell("empty", "empty"))
-                board.append(temp)
+        for i in range(8):
+            temp = []
+            for j in range(8):
+                if i == 0:
+                    temp.append(BoardCell("white", ["rook", "knight", "bishop", "queen", "king", "bishop", "knight", "rook"] [j]))
+                elif i == 1:
+                    temp.append(BoardCell("white", "pawn"))
+                elif i == 7:
+                    temp.append(BoardCell("black", ["rook", "knight", "bishop", "queen", "king", "bishop", "knight", "rook"] [j]))
+                elif i == 6:
+                    temp.append(BoardCell("black", "pawn"))
+                else:
+                    temp.append(BoardCell("empty", "empty"))
+            board.append(temp)
         return board, enpassant, castling, castling_already
         
 
@@ -930,19 +883,15 @@ def main() -> None:
                     break
                 
                 else:
-                    print(Colour.Red + "INPUT INCORRECT" + Colour.Reset)
-                    input(Colour.Yellow + "ENTER TO RETRY" + Colour.Reset)
+                    input(Colour.Red + "INPUT INCORRECT" + Colour.Reset + "\n" + Colour.Yellow + "ENTER TO RETRY" + Colour.Reset)
             else:
-                print(Colour.Red + "INPUT INCORRECT" + Colour.Reset)
-                input(Colour.Yellow + "ENTER TO RETRY" + Colour.Reset)
+                input(Colour.Red + "INPUT INCORRECT" + Colour.Reset + "\n" + Colour.Yellow + "ENTER TO RETRY" + Colour.Reset)
     
     display_board(board, player)
     if winner == "empty":
-        print(f"Draw by {end_type}")
-        input("Enter for next game")
+        print(f"Draw by {end_type}\nEnter for next game")
     else:
-        print(f"{winner.upper()} win by {end_type}")
-        input("Enter for next game")
+        print(f"{winner.upper()} win by {end_type}\nEnter for next game")
 
 while True:
     clear_screen()
