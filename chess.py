@@ -714,7 +714,8 @@ def test_setup() -> list:
         '        ',
         'pppppppp',
         'rnbqkbnr'
-        ]#for testing
+        ]#IMPORTANT: The program can't run when there is invalid for example, 2 white king, 8 pawn + 2 queen. I think it is because there will be list out of range when counting remaining piece in Game.display_board().
+        #Therefore, keep the board valid. (I haven't limited putting pawn on first row yet, but it won't casue error. I will make the limitation when i allow player to set their own board)
     for i in range(8):
         for j in range(8):
             match testing_board [i][j]:
@@ -861,12 +862,12 @@ def input_vaild(player, str_input: str) -> List[int]:
 
 
 
-#To test the program, you may change init_setup() -> test_setup() on line 869
+#To test the program, you may change init_setup() -> test_setup() on line 870
 def main(file_path: str, game_mode: int, player: str = 'white') -> None:
     #gamemode 0 -> two player
     #gamemode 1 -> level 1 computer
     #gamemode 2 -> level 2 computer
-    main_game: Game = Game(init_setup())
+    main_game: Game = Game(test_setup())
     while not main_game.ended:
         main_game.switch_player()
         main_game.possible_update()
@@ -1017,6 +1018,6 @@ while True:
         while int_input == 0:
             choices = menu_output(stage)
             int_input = input_int_check('Input number: ', choices)
-        main('file_path', int_input)
+        main('file_path', int_input - 1)
     except:
         pass
