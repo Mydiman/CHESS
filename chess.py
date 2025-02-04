@@ -1017,6 +1017,6 @@ while True:
         while int_input == 0:
             choices = menu_output(stage)
             int_input = input_int_check('Input number: ', choices)
-        main('file_path', int_input)
+        main('file_path', int_input - 1)
     except:
         pass
