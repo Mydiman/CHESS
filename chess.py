@@ -661,7 +661,7 @@ class Game:
                 for j in range(8):
                     self.board [7 - i][j].print_cell()
                         
-                list_print: list = ['Kingside castling       ->  0-0', 'Promote to a queen      ->  a7a8=Q', 'Promote to a bishop     ->  a7a8=B', 'En passant              ->  a5b6', 'Resign                  ->  resign', '', Colour.OnWhite + print_captured_list('white') + Colour.Reset, f'{Colour.OnWhite}                                  {Colour.Reset}']#'' = print nothing
+                list_print: list = ['Kingside castling       ->  0-0', 'Promote to a queen      ->  a7a8=Q', 'Promote to a bishop     ->  a7a8=B', 'En passant              ->  a5b6', 'Resign                  ->  resign', 'Quit the game           ->  quit', Colour.OnWhite + print_captured_list('white') + Colour.Reset, f'{Colour.OnWhite}                                  {Colour.Reset}']#'' = print nothing
                 print(f'{Colour.Reset} ' + fullen(f'{8 - i}') + f'   {list_print [i]}')
             
             print(f'    {Colour.OnWhite}-----------------------------------------{Colour.Reset}      ' + Colour.OnWhite + print_captured_list('black') + Colour.Reset)
@@ -678,7 +678,7 @@ class Game:
                 for j in range(8):
                     self.board [i][7 - j].print_cell()
                 
-                list_print: list = ['Kingside castling       ->  0-0', 'Promote to a queen      ->  a2a1=Q', 'Promote to a bishop     ->  a2a1=B', 'En passant              ->  a4b3', 'Resign                  ->  resign', '', Colour.OnWhite + print_captured_list('black') + Colour.Reset, f'{Colour.OnWhite}                                  {Colour.Reset}']#'' = print nothing
+                list_print: list = ['Kingside castling       ->  0-0', 'Promote to a queen      ->  a2a1=Q', 'Promote to a bishop     ->  a2a1=B', 'En passant              ->  a4b3', 'Resign                  ->  resign', 'Quit the game           ->  quit', Colour.OnWhite + print_captured_list('black') + Colour.Reset, f'{Colour.OnWhite}                                  {Colour.Reset}']#'' = print nothing
                 print(f'{Colour.Reset} ' + fullen(f'{i + 1}') + f'   {list_print [i]}')
             
             print(f'    {Colour.OnWhite}-----------------------------------------{Colour.Reset}      ' + Colour.OnWhite + print_captured_list('white') + Colour.Reset)
@@ -715,7 +715,7 @@ def test_setup() -> list:
         'pppppppp',
         'rnbqkbnr'
         ]#IMPORTANT: The program can't run when there is invalid for example, 2 white king, 8 pawn + 2 queen. I think it is because there will be list out of range when counting remaining piece in Game.display_board().
-        #Therefore, keep the board valid. (I haven't limited putting pawn on first row yet, but it won't casue error. I will make the limitation when i allow player to set their own board)
+        #Therefore, keep the board valid. (I haven't limited putting pawn on first row yet, but it won't casue error. I will make the limitation when I allow player to set their own board)
     for i in range(8):
         for j in range(8):
             match testing_board [i][j]:
@@ -824,10 +824,12 @@ def load_game(file_path: str) -> Game:
 
 
 def input_vaild(player, str_input: str) -> List[int]:
-    if str_input == '0-0':
-        if player == 'white':
-            return [4, 7]
-        return [60, 63]
+    if len(str_input) == 3:
+        str_input.replace('O', '0')
+        if str_input == '0-0':
+            if player == 'white':
+                return [4, 7]
+            return [60, 63]
     
     if len(str_input) == 4:
         if str_input [0].isalpha() and str_input [1].isdecimal() and str_input [2].isalpha() and str_input [3].isdecimal():
@@ -836,10 +838,12 @@ def input_vaild(player, str_input: str) -> List[int]:
             if 0 <= row < 8 and 0 <= column < 8 and 0 <= row1 < 8 and 0 <= column1 < 8:
                 return [c2d_1d([row, column]), c2d_1d([row1, column1])]
     
-    if str_input == '0-0-0':
-        if player == 'white':
-            return [4, 0]
-        return [60, 56]
+    if len(str_input) == 5:
+        str_input.replace('O', '0')
+        if str_input == '0-0-0':
+            if player == 'white':
+                return [4, 0]
+            return [60, 56]
     
     if len(str_input) == 6:
         if str_input [0].isalpha() and str_input [1].isdecimal() and str_input [2].isalpha() and str_input [3].isdecimal():
@@ -858,11 +862,14 @@ def input_vaild(player, str_input: str) -> List[int]:
     if str_input == 'SAVE':
         return [66, 66]
     
+    if str_input == 'QUIT':
+        return [67, 67]
+    
     return [-1, -1]
 
 
 
-#To test the program, you may change init_setup() -> test_setup() on line 870
+#To test the program, change init_setup() -> test_setup()
 def main(file_path: str, game_mode: int, player: str = 'white') -> None:
     #gamemode 0 -> two player
     #gamemode 1 -> level 1 computer
@@ -926,10 +933,16 @@ def main(file_path: str, game_mode: int, player: str = 'white') -> None:
                     main_game.ended_type = 'agreement'
                 break
             
+            #save
             elif selete_piece == 66:
                 main_game.switch_player()
                 save_game(main_game, file_path, False)
                 return
+            
+            #quit
+            elif selete_piece == 67:
+                ...
+                quit()
             
             #incorrect input
             elif selete_piece == -1:
