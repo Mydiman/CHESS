@@ -890,7 +890,9 @@ def main(file_path: str, game_mode: int, player: str = 'white') -> None:
                         move_input = input('Input \'draw\' to accept or press Enter to reject: ')
                     else:
                         move_input = input('Input the move: ')
-                    temp = move_input.replace(' ', '').upper()
+                    temp = move_input.upper()
+                    for i in [' ', '#', '+', 'X', '!', '?']:
+                        temp = temp.replace(i, '')
                     selete_piece, moving_place = input_vaild(main_game.player, temp)
                 except:
                     continue
