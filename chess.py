@@ -7,9 +7,11 @@ try:
     from typing import *
     from random import choice
     from time import sleep
-except ImportError:
-    input('There is an import error.')
-    quit()
+except:
+    try:
+        input('There is an import error.')
+    finally:
+        quit()
 
 
 
@@ -71,7 +73,7 @@ class BoardCell:
 
 
 class Game:
-    def __init__(self: Self, board: list) -> None:
+    def __init__(self: Self, board: List[List[str]]) -> None:
         self.board: List[List[BoardCell]] = [[BoardCell(board [i][j][0], board [i][j][1]) for j in range(8)] for i in range(8)]
         
         self.player: str = 'black'
@@ -652,7 +654,7 @@ class Game:
         if player == 'white':
             print('      ' + fullen('a') + '   ' + fullen('b') + '   ' + fullen('c') + '   ' + fullen('d') + '   ' + fullen('e') + '   ' + fullen('f') + '   ' + fullen('g') + '   ' + fullen('h') + f'        {Colour.Underline}Input Examples{Colour.Reset}')
             for i in range(8):
-                list_print: list = ['Moving from a1 to a2    ->  a1a2', 'Queenside castling      ->  0-0-0', 'Promote to a rook       ->  a7a8=R', 'Promote to a knight     ->  a7a8=N', 'Offer or accept a draw  ->  draw', 'Save the game           ->  save', '', f'{Colour.OnWhite}                                  {Colour.Reset}']#'' = print nothing
+                list_print: List[str] = ['Moving from a1 to a2    ->  a1a2', 'Queenside castling      ->  0-0-0', 'Promote to a rook       ->  a7a8=R', 'Promote to a knight     ->  a7a8=N', 'Offer or accept a draw  ->  draw', 'Save the game           ->  save', '', f'{Colour.OnWhite}                                  {Colour.Reset}']#'' = print nothing
                 print(f'    {Colour.OnWhite}-----------------------------------------{Colour.Reset}      {list_print [i]}')
                 
                 print(' ' + fullen(f'{8 - i}') + ' ', end = f'{Colour.OnWhite}|')
@@ -660,7 +662,7 @@ class Game:
                 for j in range(8):
                     self.board [7 - i][j].print_cell()
                         
-                list_print: list = ['Kingside castling       ->  0-0', 'Promote to a queen      ->  a7a8=Q', 'Promote to a bishop     ->  a7a8=B', 'En passant              ->  a5b6', 'Resign                  ->  resign', 'Quit the game           ->  quit', Colour.OnWhite + print_captured_list('white') + Colour.Reset, f'{Colour.OnWhite}                                  {Colour.Reset}']#'' = print nothing
+                list_print: List[str] = ['Kingside castling       ->  0-0', 'Promote to a queen      ->  a7a8=Q', 'Promote to a bishop     ->  a7a8=B', 'En passant              ->  a5b6', 'Resign                  ->  resign', 'Quit the game           ->  quit', Colour.OnWhite + print_captured_list('white') + Colour.Reset, f'{Colour.OnWhite}                                  {Colour.Reset}']#'' = print nothing
                 print(f'{Colour.Reset} ' + fullen(f'{8 - i}') + f'   {list_print [i]}')
             
             print(f'    {Colour.OnWhite}-----------------------------------------{Colour.Reset}      ' + Colour.OnWhite + print_captured_list('black') + Colour.Reset)
@@ -669,7 +671,7 @@ class Game:
         else:
             print('      ' + fullen('h') + '   ' + fullen('g') + '   ' + fullen('f') + '   ' + fullen('e') + '   ' + fullen('d') + '   ' + fullen('c') + '   ' + fullen('b') + '   ' + fullen('a') + f'        {Colour.Underline}Input Examples{Colour.Reset}')
             for i in range(8):
-                list_print: list = ['Moving from a1 to a2    ->  a1a2', 'Queenside castling      ->  0-0-0', 'Promote to a rook       ->  a2a1=R', 'Promote to a knight     ->  a2a1=N', 'Offer or accept a draw  ->  draw', 'Save the game           ->  save', '', f'{Colour.OnWhite}                                  {Colour.Reset}']#'' = print nothing
+                list_print: List = ['Moving from a1 to a2    ->  a1a2', 'Queenside castling      ->  0-0-0', 'Promote to a rook       ->  a2a1=R', 'Promote to a knight     ->  a2a1=N', 'Offer or accept a draw  ->  draw', 'Save the game           ->  save', '', f'{Colour.OnWhite}                                  {Colour.Reset}']#'' = print nothing
                 print(f'    {Colour.OnWhite}-----------------------------------------{Colour.Reset}      {list_print[i]}')
                 
                 print(' ' + fullen(f'{i + 1}') + ' ', end = f'{Colour.OnWhite}|')
@@ -677,7 +679,7 @@ class Game:
                 for j in range(8):
                     self.board [i][7 - j].print_cell()
                 
-                list_print: list = ['Kingside castling       ->  0-0', 'Promote to a queen      ->  a2a1=Q', 'Promote to a bishop     ->  a2a1=B', 'En passant              ->  a4b3', 'Resign                  ->  resign', 'Quit the game           ->  quit', Colour.OnWhite + print_captured_list('black') + Colour.Reset, f'{Colour.OnWhite}                                  {Colour.Reset}']#'' = print nothing
+                list_print: List = ['Kingside castling       ->  0-0', 'Promote to a queen      ->  a2a1=Q', 'Promote to a bishop     ->  a2a1=B', 'En passant              ->  a4b3', 'Resign                  ->  resign', 'Quit the game           ->  quit', Colour.OnWhite + print_captured_list('black') + Colour.Reset, f'{Colour.OnWhite}                                  {Colour.Reset}']#'' = print nothing
                 print(f'{Colour.Reset} ' + fullen(f'{i + 1}') + f'   {list_print [i]}')
             
             print(f'    {Colour.OnWhite}-----------------------------------------{Colour.Reset}      ' + Colour.OnWhite + print_captured_list('white') + Colour.Reset)
@@ -688,6 +690,9 @@ class Game:
 class Computer:
     def random_move(list_poss) -> List[int]:
         return choice(list_poss)
+    
+    def evalution(game: Game) -> List[int]:
+        ...
     
     def level_1(game: Game) -> List[int]:
         return Computer.random_move(game.player_possible)
@@ -926,8 +931,10 @@ def main(file_path: str, game_mode: int, player: str = 'white') -> None:
                 print(f'Input the move: {move_input}')
                 print()
                 # try multi processing
+                """
                 if game_mode != 0 and main_game.player != player:
                         loading_icon(main_game.player.capitalize() + 'is thinking.', 3)
+                """
                 
                 if game_mode == 1:
                     selete_piece, moving_place = Computer.level_1(main_game)
