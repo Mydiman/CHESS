@@ -688,6 +688,7 @@ class Computer:
     def evalution(game: Game) -> List[int]:
         ...
     
+    
     def level_1(game: Game) -> List[int]:
         return Computer.random_move(game.player_possible)
     
@@ -698,8 +699,10 @@ class Computer:
 
 
 def init_setup(testBool: bool = False) -> list:
+    ...
+    #player can create own board
     board = [['' for i in range(8)] for i in range(8)]
-    # upper case = white, lower case = black
+    #upper case = white, lower case = black
     init_board = [
         'RNBQKBNR',
         'PPPPPPPP',
