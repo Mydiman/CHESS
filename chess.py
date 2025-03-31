@@ -484,13 +484,7 @@ class Game:
         
         def check_repetition() -> None:
             # trun board into List[List[List[player, piece]]]
-            temp = []
-            for i in self.board:
-                temp1 = []
-                for j in i:
-                    temp1.append([j.player, j.piece])
-                temp.append(temp1)
-            self.repet.append([deepcopy(temp), deepcopy(self.player), deepcopy(self.oppo_player), deepcopy(self.enpass), deepcopy(self.castling), deepcopy(self.castling_rook)])
+            self.repet.append([deepcopy(self.return_board_str()), deepcopy(self.player), deepcopy(self.oppo_player), deepcopy(self.enpass), deepcopy(self.castling), deepcopy(self.castling_rook)])
             for i in self.repet:
                 if self.repet.count(i) == 3:
                     self.ended = True
@@ -935,7 +929,7 @@ def main(file_path: str, game_mode: int, player: str = 'white') -> None:
                 if game_mode != 0 and main_game.player != player:
                         loading_icon(main_game.player.capitalize() + 'is thinking.', 3)
                 """
-                
+                ...
                 if game_mode == 1:
                     selete_piece, moving_place = Computer.level_1(main_game)
                     move_input = 'a1a1=q'  #auto promote to a queen
