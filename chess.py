@@ -228,37 +228,6 @@ class Game:
         return flag_valid, promote_miss
     
     
-    def list_piece_row(self: Self, piece: List[int], place: List[int]) -> List[BoardCell]:
-        if piece [1] < place [1]:
-            a, b = piece [1], place [1]
-        else:
-            b, a = piece [1], place [1]
-        return self.board [piece [0]][a:b+1]
-    
-    def list_piece_col(self: Self, piece: List[int], place: List[int]) -> List[BoardCell]:
-        if piece [0] < place [0]:
-            a, b = piece [0], place [0]
-        else:
-            b, a = piece [0], place [0]
-        temp = []
-        for i in range(a, b + 1):
-            temp.append(self.board [i][piece [1]])
-        return temp
-    
-    def list_piece_cross(self: Self, piece: List[int], place: List[int]) -> List[BoardCell]:
-        bishop = [[1, 1], [1, -1], [-1, 1], [-1, -1]]
-        for i in bishop:
-            temp = []
-            a = piece [0]
-            b = piece [1]
-            while 0 <= a <= 7 and 0 <= b <= 7:
-                temp.append(self.board [a][b])
-                if a == place [0] and b == place [1]:
-                    return temp
-                a += i [0]
-                b += i [1]
-    
-    
     def possible_update(self: Self) -> None:
         #Input type
         #0 -> non-special
@@ -267,6 +236,37 @@ class Game:
         #3 -> promote
         #4 -> allow enpass
         def player_possible_update(player: str) -> List[List[int]]:
+            def list_piece_row(piece: List[int], place: List[int]) -> List[BoardCell]:
+                if piece [1] < place [1]:
+                    a, b = piece [1], place [1]
+                else:
+                    b, a = piece [1], place [1]
+                return self.board [piece [0]][a:b+1]
+            
+            def list_piece_col(piece: List[int], place: List[int]) -> List[BoardCell]:
+                if piece [0] < place [0]:
+                    a, b = piece [0], place [0]
+                else:
+                    b, a = piece [0], place [0]
+                temp = []
+                for i in range(a, b + 1):
+                    temp.append(self.board [i][piece [1]])
+                return temp
+            
+            def list_piece_cross(piece: List[int], place: List[int]) -> List[BoardCell]:
+                bishop = [[1, 1], [1, -1], [-1, 1], [-1, -1]]
+                for i in bishop:
+                    temp = []
+                    a = piece [0]
+                    b = piece [1]
+                    while 0 <= a <= 7 and 0 <= b <= 7:
+                        temp.append(self.board [a][b])
+                        if a == place [0] and b == place [1]:
+                            return temp
+                        a += i [0]
+                        b += i [1]
+            
+            
             def king_move_valid(piece: List[int], place: List[int], player: str) -> bool:
                 if self.board [place [0]][place [1]].player != player:
                     if abs(piece [0] - place [0]) <= 1 and abs(piece [1] - place [1]) <= 1:
@@ -283,15 +283,15 @@ class Game:
             def rook_move_valid(piece: List[int], place: List[int], player: str) -> bool:
                 if self.board [place [0]][place [1]].player != player:
                     if check_on_row(piece, place):
-                        return check_no_piece_between(self.list_piece_row(piece, place))
+                        return check_no_piece_between(list_piece_row(piece, place))
                     if check_on_col(piece, place):
-                        return check_no_piece_between(self.list_piece_col(piece, place))
+                        return check_no_piece_between(list_piece_col(piece, place))
                 return False
             
             def bishop_move_valid(piece: List[int], place: List[int], player: str) -> bool:
                 if self.board [place [0]][place [1]].player != player:
                     if check_on_cross(piece, place):
-                        return check_no_piece_between(self.list_piece_cross(piece, place))
+                        return check_no_piece_between(list_piece_cross(piece, place))
                 return False
             
             def knight_move_valid(piece: List[int], place: List[int], player: str) -> bool:
@@ -303,7 +303,7 @@ class Game:
             def pawn_move_valid(piece: List[int], place: List[int], player: str) -> bool:
                 if self.board [place [0]][place [1]].player == 'empty':
                     if check_on_col(piece, place):
-                        if check_no_piece_between(self.list_piece_col(piece, place)):
+                        if check_no_piece_between(list_piece_col(piece, place)):
                             if player == 'white':
                                 if place [0] - piece [0] == 1 and piece [0] != 6:
                                     return True
@@ -345,7 +345,7 @@ class Game:
                                 if not self.check_checked(c1d_2d(i), 'black'):
                                     temp += 1
                 if temp == 3:
-                    return check_no_piece_between(self.list_piece_row(piece, place))
+                    return check_no_piece_between(list_piece_row(piece, place))
                 return False
             
             def check_enpass(piece: List[int], place: List[int], player:str) -> bool:
