@@ -79,8 +79,10 @@ class Game:
         
         self.enpass: int = 64
         
-        self.castling: List[bool] = [False, False]#True = not ok
-        self.castling_rook: List[bool] = [False, False, False, False]#WQ, WK, BQ, BK
+        ...
+        #init by position of king and rooks
+        self.castling: List[bool] = [False, False] #True = not ok
+        self.castling_rook: List[bool] = [False, False, False, False] #WQ, WK, BQ, BK
         
         #Above involve repetition
         self.repet: list = [[deepcopy(board), 'black', 'white', 64, [False, False], [False, False, False, False]]]
@@ -88,12 +90,20 @@ class Game:
         self.player_possible: List[List[int]] = []
         self.oppo_player_possible: List[List[int]] = []
         
-        self.fifty_move: int = 0 #101 draw
+        self.fifty_move: int = 0 #101 -> draw
         self.offer_draw: bool = False
         
         self.winner: str = 'empty'
         self.ended: bool = False
         self.ended_type: str = ''
+    
+    
+    def return_board_str(self: Self) -> List[List[List[str]]]:
+        temp = [[[] for i in range(8)] for i in range(8)]
+        for i in range(8):
+            for j in range(8):
+                temp [i][j] = [self.board [i][j].player, self.board [i][j].piece]
+        return temp
     
     
     def switch_player(self: Self) -> None:
@@ -104,16 +114,16 @@ class Game:
             self.player: str = 'white'
             self.oppo_player: str = 'black'
     
-    def enpass_change(self: Self, value: int = 64) -> None:
+    def enpass_update(self: Self, value: int = 64) -> None:
         self.enpass = value
     
-    def castling_change(self: Self, poss: List[int]) -> None:
+    def castling_update(self: Self, poss: List[int]) -> None:
         if poss [0] == 4:
             self.castling [0] = True
         elif poss [0] == 60:
             self.castling [1] = True
     
-    def castling_rook_change(self: Self, poss: List[int]) -> None:
+    def castling_rook_update(self: Self, poss: List[int]) -> None:
         if poss [0] == 0:
             self.castling_rook [0] = True
         elif poss [0] == 7:
@@ -146,9 +156,9 @@ class Game:
         if poss [2] == 0:
             self.board [place_row][place_col].change_cell(player, self.board [piece_row][piece_col].piece)
             self.board [piece_row][piece_col].change_cell('empty', 'empty')
-            self.enpass_change()
-            self.castling_change(poss)
-            self.castling_rook_change(poss)
+            self.enpass_update()
+            self.castling_update(poss)
+            self.castling_rook_update(poss)
         
         elif poss [2] == 1:
             if poss == [4, 0, 1]:
@@ -171,15 +181,15 @@ class Game:
                 self.board [7][5].change_cell('black', 'rook')
                 self.board [7][6].change_cell('black', 'king')
                 self.board [7][7].change_cell('empty', 'empty')
-            self.enpass_change()
-            self.castling_change(poss)
-            self.castling_rook_change(poss)
+            self.enpass_update()
+            self.castling_update(poss)
+            self.castling_rook_update(poss)
         
         elif poss[2] == 2:
             self.board [place_row][place_col].change_cell(player, self.board [piece_row][piece_col].piece)
             self.board [piece_row][piece_col].change_cell('empty', 'empty')
             self.board [c1d_2d(self.enpass) [0]][place_col].change_cell('empty', 'empty')
-            self.enpass_change()
+            self.enpass_update()
         
         elif poss [2] == 3:
             if promote_piece == 'Q':
@@ -191,19 +201,31 @@ class Game:
             elif promote_piece == 'N':
                 self.board [place_row][place_col].change_cell(player, 'knight')
             self.board [piece_row][piece_col].change_cell('empty', 'empty')
-            self.enpass_change()
+            self.enpass_update()
         
         elif poss [2] == 4:
             self.board [place_row][place_col].change_cell(player, self.board [piece_row][piece_col].piece)
             self.board [piece_row][piece_col].change_cell('empty', 'empty')
-            self.enpass_change(poss [1])
+            self.enpass_update(poss [1])
         self.fifty_move += 1
     
-    def level1_computer_move(self: Self) -> List[int]:
-        return choice(self.player_possible) [:-1]
-    
-    def level2_computer_move(self: Self) -> List[int]:
-        ...
+    def check_valid_input(self: Self, selete_piece: int, moving_place: int, move_input: str) -> List[bool]:
+        promote_miss = False
+        flag_valid = False
+        for i in self.player_possible:
+            if [selete_piece, moving_place] == i [:-1]:
+                if not self.check_checked_after_move(i):
+                    if i [-1] == 3:
+                        if len(move_input) == 6:
+                            self.move([selete_piece, moving_place, i [-1]], move_input [-1])
+                            flag_valid = True
+                        else:
+                            promote_miss = True
+                    else:
+                        self.move([selete_piece, moving_place, i [-1]])
+                        flag_valid = True
+                break
+        return flag_valid, promote_miss
     
     
     def list_piece_row(self: Self, piece: List[int], place: List[int]) -> List[BoardCell]:
@@ -236,159 +258,6 @@ class Game:
                 a += i [0]
                 b += i [1]
     
-    def king_move_valid(self: Self, piece: List[int], place: List[int], player: str) -> bool:
-        if self.board [place [0]][place [1]].player != player:
-            if abs(piece [0] - place [0]) <= 1 and abs(piece [1] - place [1]) <= 1:
-                return True
-        temp = 0
-        if player == 'white':
-            if not self.castling [0]:
-                if c2d_1d(piece) == 4 and c2d_1d(place) == 0:
-                    for i in range(2, 5):
-                        if not self.check_checked(c1d_2d(i), 'white'):
-                            if not self.castling_rook [0]:
-                                temp += 1
-                elif c2d_1d(piece) == 4 and c2d_1d(place) == 7:
-                    for i in range(4, 7):
-                        if not self.check_checked(c1d_2d(i), 'white'):
-                            if not self.castling_rook [1]:
-                                temp += 1
-        else:
-            if not self.castling [1]:
-                if c2d_1d(piece) == 60 and c2d_1d(place) == 56:
-                    for i in range(58, 61):
-                        if not self.check_checked(c1d_2d(i), 'black'):
-                            if not self.castling_rook [2]:
-                                temp += 1
-                elif c2d_1d(piece) == 60 and c2d_1d(place) == 63:
-                    for i in range(60, 63):
-                        if not self.check_checked(c1d_2d(i), 'black'):
-                            if not self.castling_rook [3]:
-                                temp += 1
-        if temp == 3:
-            return check_no_piece_between(self.list_piece_row(piece, place))
-        return False
-    
-    def queen_move_valid(self: Self, piece: List[int], place: List[int], player: str) -> bool:
-        if self.rook_move_valid(piece, place, player):
-            return True
-        if self.bishop_move_valid(piece, place, player):
-            return True
-        return False
-    
-    def rook_move_valid(self: Self, piece: List[int], place: List[int], player: str) -> bool:
-        if self.board [place [0]][place [1]].player != player:
-            if check_on_row(piece, place):
-                return check_no_piece_between(self.list_piece_row(piece, place))
-            if check_on_col(piece, place):
-                return check_no_piece_between(self.list_piece_col(piece, place))
-        return False
-    
-    def bishop_move_valid(self: Self, piece: List[int], place: List[int], player: str) -> bool:
-        if self.board [place [0]][place [1]].player != player:
-            if check_on_cross(piece, place):
-                return check_no_piece_between(self.list_piece_cross(piece, place))
-        return False
-    
-    def knight_move_valid(self: Self, piece: List[int], place: List[int], player: str) -> bool:
-        if self.board [place [0]][place [1]].player != player:
-            if check_on_sun(piece, place):
-                return True
-        return False
-    
-    def pawn_move_valid(self: Self, piece: List[int], place: List[int], player: str) -> bool:
-        if player == 'white':
-            oppo_player = 'black'
-        else:
-            oppo_player = 'white'
-        if self.board [place [0]][place [1]].player == 'empty':
-            if check_on_col(piece, place):
-                if check_no_piece_between(self.list_piece_col(piece, place)):
-                    if player == 'white':
-                        if place [0] - piece [0] == 1:
-                            return True
-                        if place [0] - piece [0] == 2 and piece [0] == 1:
-                            return True
-                    else:
-                        if piece [0] - place [0] == 1:
-                            return True
-                        if piece [0] - place [0] == 2 and piece [0] == 6:
-                            return True
-            elif self.enpass != 64:
-                row, col = c1d_2d(self.enpass)
-                if player == 'white':
-                    if piece [0] == row and place [0] == row + 1 and place [1] == col:
-                        return True
-                else:
-                    if piece [0] == row and place [0] == row - 1 and place [1] == col:
-                        return True
-        if self.board [place [0]][place [1]].player == oppo_player:
-            if check_on_cross(piece, place):
-                if  player == 'white':
-                    if place [0] - piece [0] == 1:
-                        return True
-                else:
-                    if piece [0] - place [0] == 1:
-                        return True
-        return False
-    
-    def check_castling(self: Self, piece: List[int], place: List[int], player: str) -> bool:
-        temp = 0
-        if player == 'white':
-            if not self.castling [0]:
-                if c2d_1d(piece) == 4 and c2d_1d(place) == 0:
-                    for i in range(2, 5):
-                        if not self.check_checked(c1d_2d(i), 'white'):
-                            temp += 1
-                elif c2d_1d(piece) == 4 and c2d_1d(place) == 7:
-                    for i in range(4, 7):
-                        if not self.check_checked(c1d_2d(i), 'white'):
-                            temp += 1
-        else:
-            if not self.castling [1]:
-                if c2d_1d(piece) == 60 and c2d_1d(place) == 56:
-                    for i in range(58, 61):
-                        if not self.check_checked(c1d_2d(i), 'black'):
-                            temp += 1
-                elif c2d_1d(piece) == 60 and c2d_1d(place) == 63:
-                    for i in range(60, 63):
-                        if not self.check_checked(c1d_2d(i), 'black'):
-                            temp += 1
-        if temp == 3:
-            return check_no_piece_between(self.list_piece_row(piece, place))
-        return False
-    
-    def check_enpass(self: Self, place: List[int], player:str) -> bool:
-        if self.enpass == 64:
-            return False
-        row, col = c1d_2d(self.enpass)
-        if player == 'white':
-            if self.board [row][col].player == 'black':
-                if place [0] == row + 1 and place [1] == col:
-                    return True
-        else:
-            if self.board [row][col].player == 'white':
-                if place [0] == row - 1 and place [1] == col:
-                    return True
-        return False
-    
-    def check_promote(self: Self, piece: List[int], player: str) -> bool:
-        if player == 'white':
-            if piece [0] == 6:
-                return True
-        else:
-            if piece [0] == 1:
-                return True
-        return False
-    
-    def check_allow_enpass(self: Self, piece: List[int], place: List[int], player: str) -> bool:
-        if player == 'white':
-            if place [0] - piece [0] == 2 and piece [0] == 1:
-                return True
-        else:
-            if piece [0] - place [0] == 2 and piece [0] == 6:
-                return True
-        return False
     
     def possible_update(self: Self) -> None:
         #Input type
@@ -398,6 +267,131 @@ class Game:
         #3 -> promote
         #4 -> allow enpass
         def player_possible_update(player: str) -> List[List[int]]:
+            def king_move_valid(piece: List[int], place: List[int], player: str) -> bool:
+                if self.board [place [0]][place [1]].player != player:
+                    if abs(piece [0] - place [0]) <= 1 and abs(piece [1] - place [1]) <= 1:
+                        return True
+                return False
+            
+            def queen_move_valid(piece: List[int], place: List[int], player: str) -> bool:
+                if rook_move_valid(piece, place, player):
+                    return True
+                if bishop_move_valid(piece, place, player):
+                    return True
+                return False
+            
+            def rook_move_valid(piece: List[int], place: List[int], player: str) -> bool:
+                if self.board [place [0]][place [1]].player != player:
+                    if check_on_row(piece, place):
+                        return check_no_piece_between(self.list_piece_row(piece, place))
+                    if check_on_col(piece, place):
+                        return check_no_piece_between(self.list_piece_col(piece, place))
+                return False
+            
+            def bishop_move_valid(piece: List[int], place: List[int], player: str) -> bool:
+                if self.board [place [0]][place [1]].player != player:
+                    if check_on_cross(piece, place):
+                        return check_no_piece_between(self.list_piece_cross(piece, place))
+                return False
+            
+            def knight_move_valid(piece: List[int], place: List[int], player: str) -> bool:
+                if self.board [place [0]][place [1]].player != player:
+                    if check_on_sun(piece, place):
+                        return True
+                return False
+            
+            def pawn_move_valid(piece: List[int], place: List[int], player: str) -> bool:
+                if self.board [place [0]][place [1]].player == 'empty':
+                    if check_on_col(piece, place):
+                        if check_no_piece_between(self.list_piece_col(piece, place)):
+                            if player == 'white':
+                                if place [0] - piece [0] == 1 and piece [0] != 6:
+                                    return True
+                            else:
+                                if place [0] - piece [0] == -1 and piece [0] != 1:
+                                    return True
+                
+                if player == 'white' and self.board [place [0]][place [1]].player == 'black':
+                    if check_on_cross(piece, place):
+                        if place [0] - piece [0] == 1 and piece [0] != 6:
+                            return True
+                elif player == 'black' and self.board [place [0]][place [1]].player == 'white':
+                    if check_on_cross(piece, place):
+                        if place [0] - piece [0] == -1 and piece [0] != 1:
+                            return True
+                return False
+            
+            
+            def check_castling(piece: List[int], place: List[int], player: str) -> bool:
+                temp = 0
+                if player == 'white':
+                    if not self.castling [0]:
+                        if c2d_1d(piece) == 4 and c2d_1d(place) == 0:
+                            for i in range(2, 5):
+                                if not self.check_checked(c1d_2d(i), 'white'):
+                                    temp += 1
+                        elif c2d_1d(piece) == 4 and c2d_1d(place) == 7:
+                            for i in range(4, 7):
+                                if not self.check_checked(c1d_2d(i), 'white'):
+                                    temp += 1
+                else:
+                    if not self.castling [1]:
+                        if c2d_1d(piece) == 60 and c2d_1d(place) == 56:
+                            for i in range(58, 61):
+                                if not self.check_checked(c1d_2d(i), 'black'):
+                                    temp += 1
+                        elif c2d_1d(piece) == 60 and c2d_1d(place) == 63:
+                            for i in range(60, 63):
+                                if not self.check_checked(c1d_2d(i), 'black'):
+                                    temp += 1
+                if temp == 3:
+                    return check_no_piece_between(self.list_piece_row(piece, place))
+                return False
+            
+            def check_enpass(piece: List[int], place: List[int], player:str) -> bool:
+                if self.enpass == 64:
+                    return False
+                row, col = c1d_2d(self.enpass)
+                if player == 'white':
+                    if self.board [row][col].player == 'black':
+                        if piece [0] == row and abs(place [1] - piece [1]) == 1 and place [0] == row + 1 and place [1] == col:
+                            return True
+                else:
+                    if self.board [row][col].player == 'white':
+                        if piece [0] == row and abs(place [1] - piece [1]) == 1 and place [0] == row - 1 and place [1] == col:
+                            return True
+                return False
+            
+            def check_promote(piece: List[int], player: str) -> bool:
+                if self.board [place [0]][place [1]].player == 'empty':
+                    if player == 'white':
+                        if place [0] - piece [0] == 1 and piece [0] == 6:
+                            return True
+                    elif player == 'black':
+                        if place [0] - piece [0] == -1 and piece [0] == 1:
+                            return True
+                
+                if player == 'white' and self.board [place [0]][place [1]].player == 'black':
+                    if check_on_cross(piece, place):
+                        if place [0] - piece [0] == 1 and piece [0] == 6:
+                            return True
+                elif player == 'black' and self.board [place [0]][place [1]].player == 'white':
+                    if check_on_cross(piece, place):
+                        if place [0] - piece [0] == -1 and piece [0] == 1:
+                            return True
+                return False
+            
+            def check_allow_enpass(piece: List[int], place: List[int], player: str) -> bool:
+                if self.board [place [0]][place [1]].player == 'empty':
+                    if player == 'white':
+                        if place [0] - piece [0] == 2 and piece [0] == 1:
+                            return True
+                    else:
+                        if place [0] - piece [0] == -2 and piece [0] == 6:
+                            return True
+                return False
+            
+            
             poss: List[List[int]] = []
             for i in range(64):
                 piece: List[int] = c1d_2d(i)
@@ -405,41 +399,43 @@ class Game:
                     for j in range(64):
                         place: List[int] = c1d_2d(j)
                         
-                        #Check if vaild move
+                        #Check if it is vaild move
                         match self.board [piece [0]][piece [1]].piece:
                             case 'king':
-                                if self.king_move_valid(piece, place, player):
-                                    if self.check_castling(piece, place, player):
-                                        poss.append([c2d_1d(piece), c2d_1d(place), 1])
-                                    else:
-                                        poss.append([c2d_1d(piece), c2d_1d(place), 0])
+                                if king_move_valid(piece, place, player):
+                                    poss.append([c2d_1d(piece), c2d_1d(place), 0])
+                                
+                                elif check_castling(piece, place, player):
+                                    poss.append([c2d_1d(piece), c2d_1d(place), 1])
                             
                             case 'queen':
-                                if self.queen_move_valid(piece, place, player):
+                                if queen_move_valid(piece, place, player):
                                     poss.append([c2d_1d(piece), c2d_1d(place), 0])
                             
                             case 'rook':
-                                if self.rook_move_valid(piece, place, player):
+                                if rook_move_valid(piece, place, player):
                                     poss.append([c2d_1d(piece), c2d_1d(place), 0])
                             
                             case 'bishop':
-                                if self.bishop_move_valid(piece, place, player):
+                                if bishop_move_valid(piece, place, player):
                                     poss.append([c2d_1d(piece), c2d_1d(place), 0])
                             
                             case 'knight':
-                                if self.knight_move_valid(piece, place, player):
+                                if knight_move_valid(piece, place, player):
                                     poss.append([c2d_1d(piece), c2d_1d(place), 0])
                             
                             case 'pawn':
-                                if self.pawn_move_valid(piece, place, player):
-                                    if self.check_promote(piece, player):
-                                        poss.append([c2d_1d(piece), c2d_1d(place), 3])
-                                    elif self.check_enpass(place, player):
-                                        poss.append([c2d_1d(piece), c2d_1d(place), 2])
-                                    elif self.check_allow_enpass(piece, place, player):
-                                        poss.append([c2d_1d(piece), c2d_1d(place), 4])
-                                    else:
-                                        poss.append([c2d_1d(piece), c2d_1d(place), 0])
+                                if pawn_move_valid(piece, place, player):
+                                    poss.append([c2d_1d(piece), c2d_1d(place), 0])
+                                
+                                elif check_enpass(piece, place, player):
+                                    poss.append([c2d_1d(piece), c2d_1d(place), 2])
+                                
+                                elif check_promote(piece, player):
+                                    poss.append([c2d_1d(piece), c2d_1d(place), 3])
+                                
+                                elif check_allow_enpass(piece, place, player):
+                                    poss.append([c2d_1d(piece), c2d_1d(place), 4])
             return poss
         
         self.player_possible: List[List[int]] = player_possible_update(self.player)
@@ -464,7 +460,7 @@ class Game:
                     return True
         return False
     
-    def fake_move_check_checked(self: Self, move: List[int]) -> bool:
+    def check_checked_after_move(self: Self, move: List[int]) -> bool:
         #move = [piece, place, type] (1D)
         temp = c1d_2d(move [0])
         player = self.board [temp [0]][temp [1]].player
@@ -474,97 +470,100 @@ class Game:
         king_corr = copy_game.find_king(player)
         return copy_game.check_checked(king_corr, player)
     
-    def check_fifty(self: Self) -> None:
-        #Made change in move
-        if self.fifty_move == 101:
-            self.ended = True
-            self.winner = 'empty'
-            self.ended_type = 'fifty-move rule'
     
-    def check_repetition(self: Self) -> None:
-        # trun board into List[List[List[player, piece]]]
-        temp = []
-        for i in self.board:
-            temp1 = []
-            for j in i:
-                temp1.append([j.player, j.piece])
-            temp.append(temp1)
-        self.repet.append([deepcopy(temp), deepcopy(self.player), deepcopy(self.oppo_player), deepcopy(self.enpass), deepcopy(self.castling), deepcopy(self.castling_rook)])
-        for i in self.repet:
-            if self.repet.count(i) == 3:
+    def check_win_draw(self: Self) -> None:
+        
+        def check_fifty() -> None:
+            #Made change in move
+            if self.fifty_move == 101:
                 self.ended = True
                 self.winner = 'empty'
-                self.ended_type = 'repetition'
-                return
-    
-    def check_insufficient(self: Self) -> None:
-        def remaining_piece(player) -> List[str]:
+                self.ended_type = 'fifty-move rule'
+        
+        def check_repetition() -> None:
+            # trun board into List[List[List[player, piece]]]
             temp = []
             for i in self.board:
+                temp1 = []
                 for j in i:
-                    if j.player == player:
-                        temp.append(j.piece)
-            return sorting_piece(temp)
+                    temp1.append([j.player, j.piece])
+                temp.append(temp1)
+            self.repet.append([deepcopy(temp), deepcopy(self.player), deepcopy(self.oppo_player), deepcopy(self.enpass), deepcopy(self.castling), deepcopy(self.castling_rook)])
+            for i in self.repet:
+                if self.repet.count(i) == 3:
+                    self.ended = True
+                    self.winner = 'empty'
+                    self.ended_type = 'repetition'
+                    return
         
-        white_remaining = remaining_piece('white')
-        black_remaining = remaining_piece('black')
-        insufficient_list = [['king'], ['bishop', 'king'], ['knight', 'king']]
-        
-        if insufficient_list.count(white_remaining) == insufficient_list.count(black_remaining) == 1:
-            self.ended = True
-            self.winner = 'empty'
-            self.ended_type = 'insufficient material'
-            return
-        
-        insufficient_list = [['king'], ['knight', 'knight', 'king']]
-        if insufficient_list.count(white_remaining) == insufficient_list.count(black_remaining) == 1:
-            if white_remaining != black_remaining:
+        def check_insufficient() -> None:
+            def remaining_piece(player) -> List[str]:
+                temp = []
+                for i in self.board:
+                    for j in i:
+                        if j.player == player:
+                            temp.append(j.piece)
+                return sorting_piece(temp)
+            
+            white_remaining = remaining_piece('white')
+            black_remaining = remaining_piece('black')
+            insufficient_list = [['king'], ['bishop', 'king'], ['knight', 'king']]
+            
+            if insufficient_list.count(white_remaining) == insufficient_list.count(black_remaining) == 1:
                 self.ended = True
                 self.winner = 'empty'
                 self.ended_type = 'insufficient material'
                 return
+            
+            insufficient_list = [['king'], ['knight', 'knight', 'king']]
+            if insufficient_list.count(white_remaining) == insufficient_list.count(black_remaining) == 1:
+                if white_remaining != black_remaining:
+                    self.ended = True
+                    self.winner = 'empty'
+                    self.ended_type = 'insufficient material'
+                    return
+            
+            insufficient_list = [['king'], ['bishop', 'bishop', 'king']]
+            if insufficient_list.count(white_remaining) == insufficient_list.count(black_remaining) == 1:
+                if white_remaining != black_remaining:
+                    # dark light
+                    temp = ''
+                    for i in range(8):
+                        for j in range(8):
+                            if self.board [i][j].piece == 'bishop':
+                                if temp == '':
+                                    temp = dark_light(i, j)
+                                else:
+                                    if temp == dark_light(i, j):
+                                        self.ended = True
+                                        self.winner = 'empty'
+                                        self.ended_type = 'insufficient material'
+                                        return
         
-        insufficient_list = [['king'], ['bishop', 'bishop', 'king']]
-        if insufficient_list.count(white_remaining) == insufficient_list.count(black_remaining) == 1:
-            if white_remaining != black_remaining:
-                # dark light
-                temp = ''
-                for i in range(8):
-                    for j in range(8):
-                        if self.board [i][j].piece == 'bishop':
-                            if temp == '':
-                                temp = dark_light(i, j)
-                            else:
-                                if temp == dark_light(i, j):
-                                    self.ended = True
-                                    self.winner = 'empty'
-                                    self.ended_type = 'insufficient material'
-                                    return
-    
-    def check_checkmate_stalemate(self: Self) -> None:
-        self.switch_player()
-        self.possible_update()
-        for i in self.player_possible:
-            if not self.fake_move_check_checked(i):
-                self.switch_player()
+        def check_checkmate_stalemate() -> None:
+            self.switch_player()
+            self.possible_update()
+            for i in self.player_possible:
+                if not self.check_checked_after_move(i):
+                    self.switch_player()
+                    return
+            temp = self.find_king(self.player)
+            self.switch_player()
+            self.possible_update()
+            if self.check_checked(temp, self.oppo_player):
+                self.ended = True
+                self.winner = self.player
+                self.ended_type = 'checkmate'
                 return
-        temp = self.find_king(self.player)
-        self.switch_player()
-        self.possible_update()
-        if self.check_checked(temp, self.oppo_player):
             self.ended = True
-            self.winner = self.player
-            self.ended_type = 'checkmate'
-            return
-        self.ended = True
-        self.winner = 'empty'
-        self.ended_type = 'stalemate'
-    
-    def check_win_draw(self: Self) -> None:
-        self.check_fifty()
-        self.check_repetition()
-        self.check_insufficient()
-        self.check_checkmate_stalemate()
+            self.winner = 'empty'
+            self.ended_type = 'stalemate'
+        
+        
+        check_fifty()
+        check_repetition()
+        check_insufficient()
+        check_checkmate_stalemate()
     
     
     def display_board(self: Self, player: str | None = None) -> None:
@@ -581,7 +580,7 @@ class Game:
             half_to_full [0x20] = 0x3000
             return string.translate(half_to_full)
         
-        def captured_remaining_piece_update(player) -> None:
+        def captured_remaining_piece_update(player: str) -> None:
             captured_piece: List[str] = ['pawn', 'pawn', 'pawn', 'pawn', 'pawn', 'pawn', 'pawn', 'pawn', 'bishop', 'bishop', 'knight', 'knight', 'rook', 'rook', 'queen', 'king']
             remaining_piece: List[str] = []
             for i in self.board:
@@ -596,7 +595,7 @@ class Game:
             remaining_piece.remove('king')
             return [captured_piece, sorting_piece(remaining_piece)]
         
-        def total_point_cal(player) -> int:
+        def total_point_cal(player: str) -> int:
             total_point = 0
             piece_point = [['pawn', 1], ['bishop', 3], ['knight', 3], ['rook', 5], ['queen', 9]]
             for i in white_remaining_piece:
@@ -686,26 +685,23 @@ class Game:
 
 
 
-def init_setup() -> list:
-    board = [['' for i in range(8)] for i in range(8)]
-    for i in range(8):
-        for j in range(8):
-            if i == 0:
-                board [i][j] = ['white', ['rook', 'knight', 'bishop', 'queen', 'king', 'bishop', 'knight', 'rook'] [j]]
-            elif i == 1:
-                board [i][j] = ['white', 'pawn']
-            elif i == 7:
-                board [i][j] = ['black', ['rook', 'knight', 'bishop', 'queen', 'king', 'bishop', 'knight', 'rook'] [j]]
-            elif i == 6:
-                board [i][j] = ['black', 'pawn']
-            else:
-                board [i][j] = ['empty', 'empty']
-    return board
+class Computer:
+    def random_move(list_poss) -> List[int]:
+        return choice(list_poss)
+    
+    def level_1(game: Game) -> List[int]:
+        return Computer.random_move(game.player_possible)
+    
+    def level_2(game: Game) -> List[int]:
+        ...
+        return
 
-def test_setup() -> list:
+
+
+def init_setup(testBool: bool = False) -> list:
     board = [['' for i in range(8)] for i in range(8)]
     # upper case = white, lower case = black
-    testing_board = [
+    init_board = [
         'RNBQKBNR',
         'PPPPPPPP',
         '        ',
@@ -714,11 +710,22 @@ def test_setup() -> list:
         '        ',
         'pppppppp',
         'rnbqkbnr'
+        ]
+    if testBool:
+        init_board = [
+        'RNBQKBNR',
+        'PPPPPP  ',
+        '        ',
+        '        ',
+        '        ',
+        '        ',
+        'pppppppP',
+        'rnbqkbn '
         ]#IMPORTANT: The program can't run when there is invalid for example, 2 white king, 8 pawn + 2 queen. I think it is because there will be list out of range when counting remaining piece in Game.display_board().
         #Therefore, keep the board valid. (I haven't limited putting pawn on first row yet, but it won't casue error. I will make the limitation when I allow player to set their own board)
     for i in range(8):
         for j in range(8):
-            match testing_board [i][j]:
+            match init_board [i][j]:
                 case 'K':
                     board [i][j] = ['white', 'king']
                 case 'Q':
@@ -782,6 +789,7 @@ def dark_light(row: int, col: int) -> Literal ['dark', 'light']:
         return 'light'
 
 
+
 def check_on_row(piece: List[int], place: List[int]) -> bool:
     if piece [0] == place [0]:
         return True
@@ -815,11 +823,24 @@ def check_no_piece_between(pieces: List[BoardCell]) -> bool:
     return True
 
 
+
 def save_game(game: Game, file_path: str, ended: bool = False) -> None:
     ...
 
 def load_game(file_path: str) -> Game:
     ...
+
+
+
+def loading_icon(text_msg: str, second) -> None:
+    list_loading = ['\\', '|', '/', '-']
+    for i in range(second, 0, -1):
+        for j in list_loading:
+            try:
+                print(f'\r {j} {text_msg}', end = '')
+                sleep(0.25)
+            except:
+                pass
 
 
 
@@ -869,12 +890,14 @@ def input_vaild(player, str_input: str) -> List[int]:
 
 
 
-#To test the program, change init_setup() -> test_setup()
+#delete testBool = True
 def main(file_path: str, game_mode: int, player: str = 'white') -> None:
     #gamemode 0 -> two player
-    #gamemode 1 -> level 1 computer
-    #gamemode 2 -> level 2 computer
-    main_game: Game = Game(test_setup())
+    #gamemode 1 -> computer (completely random)
+    #gamemode 2 -> computer (6 layer random)
+    
+    
+    main_game: Game = Game(init_setup(testBool = True))
     while not main_game.ended:
         main_game.switch_player()
         main_game.possible_update()
@@ -902,11 +925,17 @@ def main(file_path: str, game_mode: int, player: str = 'white') -> None:
                 main_game.display_board(main_game.oppo_player)
                 print(f'Input the move: {move_input}')
                 print()
+                # try multi processing
+                if game_mode != 0 and main_game.player != player:
+                        loading_icon(main_game.player.capitalize() + 'is thinking.', 3)
+                
                 if game_mode == 1:
-                    selete_piece, moving_place = main_game.level1_computer_move()
+                    selete_piece, moving_place = Computer.level_1(main_game)
+                    move_input = 'a1a1=q'  #auto promote to a queen
                 
                 elif game_mode == 2:
-                    selete_piece, moving_place = main_game.level2_computer_move()
+                    selete_piece, moving_place = Computer.level_2(main_game)
+                    #return move_input (for promotion)
             
             #agreement (only for two player)
             if main_game.offer_draw:
@@ -955,32 +984,10 @@ def main(file_path: str, game_mode: int, player: str = 'white') -> None:
             
             #valid input
             else:
-                promote_miss = False
-                Flag_valid = False
-                for i in main_game.player_possible:
-                    if [selete_piece, moving_place] == i [:-1]:
-                        if not main_game.fake_move_check_checked(i):
-                            if i [-1] == 3:
-                                if len(move_input) == 6:
-                                    main_game.move([selete_piece, moving_place, i [-1]], move_input [-1])
-                                    Flag_valid = True
-                                else:
-                                    promote_miss = True
-                            else:
-                                main_game.move([selete_piece, moving_place, i [-1]])
-                                Flag_valid = True
-                        if game_mode != 0 and main_game.player != player:
-                            list_loading = ['\\', '|', '/', '-']
-                            for i in range(3, 0, -1):
-                                for j in list_loading:
-                                    try:
-                                        print(f'\r {j} {main_game.player.capitalize()} is thinking.', end = '')
-                                        sleep(0.25)
-                                    except:
-                                        pass
-                        break
+                flag_valid, promote_miss =  main_game.check_valid_input(selete_piece, moving_place, temp)
                 
-                if Flag_valid:
+                #loading
+                if flag_valid:
                     main_game.check_win_draw()
                     break
             
