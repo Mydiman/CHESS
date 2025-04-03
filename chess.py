@@ -194,6 +194,7 @@ class Game:
             self.enpass_update()
         
         elif poss [2] == 3:
+            promote_piece == promote_piece.upper()
             if promote_piece == 'Q':
                 self.board [place_row][place_col].change_cell(player, 'queen')
             elif promote_piece == 'R':
@@ -685,8 +686,47 @@ class Computer:
     def random_move(list_poss) -> List[int]:
         return choice(list_poss)
     
-    def evalution(game: Game) -> List[int]:
+    def evalution(game: Game, level: int) -> int:
+        #2147483647 is limit
         ...
+    
+    def engine(game: Game, layer: int, orginal_layer:int, level: int) -> int | List[int]:
+        #layer is odd. e.g. 1 -> 0, ran two layer
+        temp = deepcopy(game)
+        copy_game = deepcopy(temp)
+        possible_and_point_list = []
+        
+        for i in copy_game.player_possible:
+            str_input = ['A1A1=Q', 'A1A1=R', 'A1A1=B', 'A1A1=N']
+            loop_time = 1
+            if i [2] :
+                loop_time = 4
+            
+            for j in range(loop_time):
+                flag_valid = copy_game.check_valid_input(i [0], i [1], str_input [j]) [0]
+                
+                if not flag_valid:
+                    point = 2147483647#limit
+                else:
+                    copy_game.check_win_draw()
+                    if layer == 0:
+                        return -Computer.evalution(copy_game, level)
+                    else:
+                        copy_game.switch_player()
+                        copy_game.possible_update()
+                        point = Computer.engine(copy_game, layer - 1, orginal_layer)
+                
+                possible_and_point_list.append([i [0], i [1], str_input [j], point])
+                copy_game = deepcopy(temp)
+        
+        if layer < orginal_layer:
+            lowest = possible_and_point_list [0][3]
+            for i in possible_and_point_list [3]:
+                if i < lowest:
+                    lowest = i
+            return -i
+        else:
+            return possible_and_point_list
     
     
     def level_1(game: Game) -> List[int]:
@@ -846,7 +886,7 @@ def loading_icon(text_msg: str, second) -> None:
 
 
 
-def input_vaild(player, str_input: str) -> List[int]:
+def input_valid(player, str_input: str) -> List[int]:
     if len(str_input) == 3:
         str_input.replace('O', '0')
         if str_input == '0-0':
@@ -918,7 +958,7 @@ def main(file_path: str, game_mode: int, player: str = 'white') -> None:
                     temp = move_input.upper()
                     for i in [' ', '#', '+', 'X', '!', '?']:
                         temp = temp.replace(i, '')
-                    selete_piece, moving_place = input_vaild(main_game.player, temp)
+                    selete_piece, moving_place = input_valid(main_game.player, temp)
                 except:
                     continue
             
