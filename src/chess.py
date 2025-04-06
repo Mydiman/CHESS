@@ -1,6 +1,13 @@
 '''CHESS'''
 
 
+if __name__ == '__main__':
+    try:
+        input("\033[31mPlease run { __main__.py } in the root directory of this project\033[K")
+    finally:
+        quit()
+
+
 
 try:
     from copy import deepcopy
@@ -9,7 +16,7 @@ try:
     from time import sleep
 except:
     try:
-        input('There is an import error.')
+        input('Import error')
     finally:
         quit()
 
@@ -691,7 +698,7 @@ class Computer:
         ...
     
     def engine(game: Game, layer: int, orginal_layer:int, level: int) -> int | List[int]:
-        #layer is odd. e.g. 1 -> 0, ran two layer
+        #layer is even. e.g. 2 -> 1 -> 0, W -> B -> W, ran three layer
         temp = deepcopy(game)
         copy_game = deepcopy(temp)
         possible_and_point_list = []
@@ -699,7 +706,7 @@ class Computer:
         for i in copy_game.player_possible:
             str_input = ['A1A1=Q', 'A1A1=R', 'A1A1=B', 'A1A1=N']
             loop_time = 1
-            if i [2] :
+            if i [2]:
                 loop_time = 4
             
             for j in range(loop_time):
@@ -933,7 +940,7 @@ def input_valid(player, str_input: str) -> List[int]:
 
 
 #delete testBool = True
-def main(file_path: str, game_mode: int, player: str = 'white') -> None:
+def chess_game(file_path: str, game_mode: int, player: str = 'white') -> None:
     #gamemode 0 -> two player
     #gamemode 1 -> computer (completely random)
     #gamemode 2 -> computer (6 layer random)
@@ -1011,7 +1018,7 @@ def main(file_path: str, game_mode: int, player: str = 'white') -> None:
             #save
             elif selete_piece == 66:
                 main_game.switch_player()
-                save_game(main_game, file_path, False)
+                save_game(main_game, file_path, ended=False)
                 return
             
             #quit
@@ -1048,7 +1055,7 @@ def main(file_path: str, game_mode: int, player: str = 'white') -> None:
     
     try:
         clear_screen()
-        save_game(main_game, file_path, True)
+        save_game(main_game, file_path, ended=True)
         main_game.switch_player()
         main_game.display_board()
         if main_game.winner == 'empty':
@@ -1076,14 +1083,15 @@ def menu_output(stage: int) -> int:
         return 2
 
 
-while True:
-    try:
-        clear_screen('Menu')
-        stage = 1
-        int_input = 0
-        while int_input == 0:
-            choices = menu_output(stage)
-            int_input = input_int_check('Input number: ', choices)
-        main('file_path', int_input - 1)
-    except:
-        pass
+def main() -> None:
+    while True:
+        try:
+            clear_screen('Menu')
+            stage = 1
+            int_input = 0
+            while int_input == 0:
+                choices = menu_output(stage)
+                int_input = input_int_check('Input number: ', choices)
+            chess_game('file_path', int_input - 1)
+        except:
+            pass
