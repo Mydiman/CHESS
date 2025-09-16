@@ -11,6 +11,8 @@ if __name__ == '__main__':
 
 try:
     from copy import deepcopy
+    # some place cannot use *
+    # try to replace the *
     from typing import *
     from random import choice
     from time import sleep
